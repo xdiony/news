@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>鏅ㄩ棿閫熻 路 姣忔棩璧勮</title>
+<style>
+:root {
+  --bg: #f7f3ed;
+  --card: #fffdf9;
+  --text: #1e1a14;
+  --sub: #8a7b6b;
+  --accent: #c06e3b;
+  --accent-bg: #fdf3ea;
+  --border: #e6ded4;
+  --tag-bg: #f0ebe3;
+  --shadow: 0 1px 6px rgba(30,26,20,.06);
+  --sz-bg: #e8f0fe; --sz-text: #3c5aa6;
+  --jj-bg: #fef7e0; --jj-text: #b8860b;
+  --kj-bg: #eaf5ea; --kj-text: #2d7d46;
+  --dt-bg: #f3e8ff; --dt-text: #6b3fa0;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1814;
+    --card: #25211b;
+    --text: #e6ddd2;
+    --sub: #9a8b7a;
+    --accent: #d4895a;
+    --accent-bg: #2d251c;
+    --border: #3d362e;
+    --tag-bg: #302a23;
+    --shadow: 0 1px 6px rgba(0,0,0,.3);
+    --sz-bg: #1e2a4a; --sz-text: #8aace0;
+    --jj-bg: #3d3520; --jj-text: #e0c060;
+    --kj-bg: #1e3d24; --kj-text: #6ab87a;
+    --dt-bg: #2d2040; --dt-text: #b08ae0;
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
+  min-height:100vh;-webkit-font-smoothing:antialiased;
+}
+.app{max-width:460px;margin:0 auto;padding:0 16px 48px}
+
+/* header */
+.header{padding:24px 0 8px;position:sticky;top:0;z-index:10;background:linear-gradient(180deg,var(--bg) 80%,transparent);display:flex;align-items:flex-end;justify-content:space-between}
+.logo{font-size:20px;font-weight:700;letter-spacing:.5px}
+.logo span{color:var(--accent)}
+.meta-line{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sub)}
+.dot{width:6px;height:6px;border-radius:50%;background:#4caf50;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.greeting{font-size:26px;font-weight:700;margin:14px 0 6px}
+
+/* tabs */
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:6px 0 16px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:7px 15px;border-radius:18px;font-size:13px;white-space:nowrap;border:1px solid var(--border);background:var(--card);color:var(--sub);cursor:pointer;transition:.15s;user-select:none}
+.tab.active{border-color:transparent}
+.tab.sz.active{background:var(--sz-bg);color:var(--sz-text)}
+.tab.jj.active{background:var(--jj-bg);color:var(--jj-text)}
+.tab.kj.active{background:var(--kj-bg);color:var(--kj-text)}
+.tab.dt.active{background:var(--dt-bg);color:var(--dt-text)}
+.tab:active{transform:scale(.96)}
+
+/* progress */
+.progress{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.progress-item{font-size:11px;padding:3px 10px;border-radius:10px;background:var(--tag-bg);color:var(--sub);display:flex;align-items:center;gap:3px}
+.progress-item.done{background:#e8f5e9;color:#2e7d32}
+.progress-item.err{background:#fbe9e7;color:#c62828}
+
+/* section */
+.section-title{font-size:16px;font-weight:700;margin:4px 0 12px;display:flex;align-items:center;gap:8px}
+.section-count{font-size:11px;font-weight:400;padding:2px 8px;border-radius:10px;background:var(--tag-bg);color:var(--sub)}
+
+/* cards */
+.news-list{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--card);border-radius:12px;padding:14px;box-shadow:var(--shadow);display:block;text-decoration:none;color:inherit;cursor:pointer;transition:.15s;border:1px solid transparent}
+.card:active{transform:scale(.985);border-color:var(--accent)}
+.card-source{font-size:11px;font-weight:600;margin-bottom:5px}
+.card-source.cn{color:var(--sz-text)}.card-source.en{color:var(--accent)}
+.card-title{font-size:15px;font-weight:600;line-height:1.5;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-desc{font-size:12.5px;color:var(--sub);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-meta{margin-top:8px;font-size:11px;color:var(--sub);display:flex;gap:10px;align-items:center}
+.card-meta .trans-badge{font-size:10px;padding:1px 6px;border-radius:8px;background:var(--accent-bg);color:var(--accent)}
+
+/* states */
+.state{text-align:center;padding:60px 20px;color:var(--sub);line-height:1.7}
+.state-icon{font-size:44px;margin-bottom:10px}
+.spin{width:30px;height:30px;margin:0 auto 12px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* footer */
+.footer{text-align:center;padding:24px 0;font-size:11px;color:var(--sub);border-top:1px solid var(--border);margin-top:20px}
+
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 20px;border-radius:20px;font-size:13px;z-index:99;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+
+.pull-hint{text-align:center;padding:10px;font-size:11px;color:var(--sub);opacity:0;transition:opacity .2s}
+
+.refresh-fab{position:fixed;bottom:20px;right:calc(50% - 230px + 16px);width:44px;height:44px;border-radius:50%;background:var(--card);border:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;z-index:20;transition:.15s}
+.refresh-fab:active{transform:scale(.9)}
+@media(min-width:500px){.refresh-fab{right:calc(50% - 230px)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <div class="logo">鏅ㄩ棿<span>路</span>閫熻</div>
+      <div class="meta-line"><span class="dot"></span><span id="dateStr"></span><span id="updateTime"></span></div>
+      <div class="greeting" id="greeting"></div>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="progress" id="progress"></div>
+  <div id="content">
+    <div class="state"><div class="spin"></div><div>姝ｅ湪鑱氬悎浠婃棩璧勮鈥?/div></div>
+  </div>
+  <div class="pull-hint" id="pullHint">鈫?涓嬫媺鍒锋柊</div>
+  <div class="footer">RSS鑱氬悎 路 閮ㄥ垎澶栫綉鍐呭鏈虹炕涓枃<br>Powered by rss2json</div>
+</div>
+<div class="toast" id="toast"></div>
+<button class="refresh-fab" onclick="refreshAll()" title="鍒锋柊">鉄?/button>
+
+<script>
+// ===================== 鏉垮潡閰嶇疆 =====================
+const PANELS = {
+  shizheng: {
+    name: '鏃舵斂', cls: 'sz', emoji: '馃彌',
+    maxItems: 15,
+    feeds: [
+      { url: 'http://www.xinhuanet.com/politics/news_politics.xml', source: '鏂板崕缃?, lang: 'zh' },
+      { url: 'https://rsshub.app/people/xjp', source: '浜烘皯缃?, lang: 'zh' },
+      { url: 'https://rsshub.app/cankaoxiaoxi', source: '鍙傝€冩秷鎭?, lang: 'zh' },
+      { url: 'https://rsshub.app/huanqiu', source: '鐜悆缃?, lang: 'zh' },
+      { url: 'https://rsshub.app/jiemian', source: '鐣岄潰鏂伴椈', lang: 'zh' },
+      { url: 'https://feeds.bbci.co.uk/news/rss.xml', source: 'BBC News', lang: 'en' },
+      { url: 'https://rsshub.app/reuters/world', source: 'Reuters', lang: 'en' },
+      { url: 'https://rsshub.app/apnews/top-news', source: 'AP News', lang: 'en' },
+      { url: 'https://www.aljazeera.com/xml/rss/all.xml', source: 'Al Jazeera', lang: 'en' },
+    ]
+  },
+  jingji: {
+    name: '缁忔祹', cls: 'jj', emoji: '馃挵',
+    maxItems: 15,
+    feeds: [
+      { url: 'https://rsshub.app/cls/telegraph', source: '璐㈣仈绀?, lang: 'zh' },
+      { url: 'https://rsshub.app/yicai/brief', source: '绗竴璐㈢粡', lang: 'zh' },
+      { url: 'https://rsshub.app/eeo', source: '缁忔祹瑙傚療鎶?, lang: 'zh' },
+      { url: 'https://rsshub.app/jiemian', source: '鐣岄潰鏂伴椈', lang: 'zh' },
+      { url: 'https://rsshub.app/bloomberg', source: 'Bloomberg', lang: 'en' },
+      { url: 'https://rsshub.app/ft/chinese', source: 'FT', lang: 'en' },
+      { url: 'https://rsshub.app/cnbc', source: 'CNBC', lang: 'en' },
+      { url: 'https://rsshub.app/the-economist', source: 'The Economist', lang: 'en' },
+    ]
+  },
+  keji: {
+    name: '绉戞妧', cls: 'kj', emoji: '馃',
+    maxItems: 15,
+    feeds: [
+      { url: 'https://rsshub.app/jiqizhixin/home', source: '鏈哄櫒涔嬪績', lang: 'zh' },
+      { url: 'https://rsshub.app/36kr', source: '36姘?, lang: 'zh' },
+      { url: 'https://rsshub.app/infoq', source: 'InfoQ', lang: 'zh' },
+      { url: 'https://rsshub.app/jiemian', source: '鐣岄潰鏂伴椈', lang: 'zh' },
+      { url: 'https://rsshub.app/techcrunch', source: 'TechCrunch', lang: 'en' },
+      { url: 'https://rsshub.app/theverge', source: 'The Verge', lang: 'en' },
+      { url: 'https://rsshub.app/wired', source: 'Wired', lang: 'en' },
+      { url: 'https://rsshub.app/arstechnica', source: 'Ars Technica', lang: 'en' },
+      { url: 'https://rsshub.app/mit-technology-review', source: 'MIT Tech Review', lang: 'en' },
+      { url: 'https://rsshub.app/liangzixing', source: '閲忓瓙浣?, lang: 'zh' },
+    ]
+  },
+  dongxiang: {
+    name: '鍔ㄥ悜', cls: 'dt', emoji: '馃摗',
+    maxItems: 0,
+    feeds: []
+  }
+};
+
+const CACHE_KEY = 'md_cache_v2';
+const CACHE_TTL = 25 * 60 * 1000;
+
+// ===================== 宸ュ叿 =====================
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+function fmtDate(d) {
+  const w = ['鏃?,'涓€','浜?,'涓?,'鍥?,'浜?,'鍏?];
+  return `${d.getFullYear()}骞?{d.getMonth()+1}鏈?{d.getDate()}鏃?鏄熸湡${w[d.getDay()]}`;
+}
+function fmtTime(d) { return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+
+function greet() {
+  const h = new Date().getHours();
+  if (h < 6) return '澶滄繁浜?馃寵';
+  if (h < 9) return '鏃╀笂濂?鈽€锔?;
+  if (h < 12) return '涓婂崍濂?馃尋';
+  if (h < 14) return '涓崍濂?鈽€锔?;
+  if (h < 18) return '涓嬪崍濂?馃寛';
+  return '鏅氫笂濂?馃寙';
+}
+
+function toast(msg) {
+  const el = $('#toast'); el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function strip(str) {
+  if (!str) return '';
+  return str.replace(/<[^>]*>/g,'').replace(/&[a-z]+;/g,' ').replace(/\s+/g,' ').trim();
+}
+
+function wordSet(text) {
+  if (!text) return new Set();
+  // 绠€鍗曞垎瀛楋紙涓枃鎸夊瓧锛岃嫳鏂囨寜璇嶏級
+  const cleaned = text.toLowerCase().replace(/[^\u4e00-\u9fa5a-z0-9]/g,' ');
+  return new Set(cleaned.split(/\s+/).filter(w => w.length > 0));
+}
+
+function overlapPct(a, b) {
+  const wa = wordSet(a), wb = wordSet(b);
+  if (wa.size === 0 && wb.size === 0) return 0;
+  const intersect = [...wa].filter(w => wb.has(w)).length;
+  return intersect / Math.max(wa.size, wb.size);
+}
+
+// ===================== 缈昏瘧 =====================
+const translateCache = {};
+async function translateText(text) {
+  if (!text || text.length < 2) return text;
+  const key = text.substring(0, 80);
+  if (translateCache[key]) return translateCache[key];
+
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${encodeURIComponent(text.substring(0,500))}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const result = (data[0] || []).map(x => x[0]).join('').trim();
+    translateCache[key] = result || text;
+    return translateCache[key];
+  } catch {
+    return text;
+  }
+}
+
+async function translateItems(items) {
+  const toTranslate = [];
+  const indices = [];
+  items.forEach((item, i) => {
+    if (item._lang === 'en') {
+      // Translate title
+      toTranslate.push(item.title.substring(0,200));
+      indices.push({ i, field: 'title' });
+      // Translate description
+      if (item.description && item.description.length > 5) {
+        toTranslate.push(item.description.substring(0,300));
+        indices.push({ i, field: 'description' });
+      }
+    }
+  });
+
+  if (toTranslate.length === 0) return items;
+
+  // Batch translate with small delay between batches
+  const BATCH = 5;
+  const results = [];
+  for (let b = 0; b < toTranslate.length; b += BATCH) {
+    const batch = toTranslate.slice(b, b + BATCH);
+    const batchResults = await Promise.all(batch.map(t => translateText(t)));
+    results.push(...batchResults);
+    if (b + BATCH < toTranslate.length) await sleep(200);
+  }
+
+  indices.forEach(({ i, field }, idx) => {
+    items[i][field] = results[idx] || items[i][field];
+  });
+
+  return items;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ===================== 鏁版嵁鑾峰彇 =====================
+async function fetchOneFeed(feedConfig) {
+  const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedConfig.url)}&order_by=pubDate&order_dir=desc`;
+  const resp = await fetch(url, { signal: AbortSignal.timeout(12000) });
+  const data = await resp.json();
+  if (data.status !== 'ok') throw new Error(data.message || 'parse error');
+  return (data.items || []).map(item => ({
+    title: strip(item.title),
+    description: strip(item.description || '').substring(0, 150),
+    link: item.link,
+    pubDate: item.pubDate,
+    source: feedConfig.source,
+    _lang: feedConfig.lang
+  }));
+}
+
+async function fetchPanel(panelKey, onProgress) {
+  const panel = PANELS[panelKey];
+  if (!panel || panel.feeds.length === 0) return [];
+
+  let allItems = [];
+  let done = 0, total = panel.feeds.length;
+
+  const results = await Promise.allSettled(
+    panel.feeds.map(async (feed, idx) => {
+      try {
+        const items = await fetchOneFeed(feed);
+        done++;
+        if (onProgress) onProgress(panelKey, feed.source, 'ok', done, total);
+        return items;
+      } catch (e) {
+        done++;
+        if (onProgress) onProgress(panelKey, feed.source, 'err', done, total);
+        console.warn(`${feed.source} 鑾峰彇澶辫触: ${e.message}`);
+        return [];
+      }
+    })
+  );
+
+  for (const r of results) {
+    if (r.status === 'fulfilled') allItems = allItems.concat(r.value);
+  }
+
+  return allItems;
+}
+
+function deduplicate(items, maxItems) {
+  // Sort by date (newest first)
+  items.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+  const deduped = [];
+  const seen = new Set();
+
+  for (const item of items) {
+    // Skip items with no meaningful title
+    if (!item.title || item.title.length < 4) continue;
+    // Skip duplicates by URL
+    if (seen.has(item.link)) continue;
+    // Check title overlap with existing items
+    const isDup = deduped.some(existing => overlapPct(item.title, existing.title) > 0.55);
+    if (isDup) continue;
+
+    seen.add(item.link);
+    deduped.push(item);
+    if (deduped.length >= maxItems) break;
+  }
+
+  return deduped;
+}
+
+// ===================== 缂撳瓨 =====================
+function getCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const c = JSON.parse(raw);
+    if (Date.now() - c.t > CACHE_TTL) return null;
+    return c;
+  } catch { return null; }
+}
+function setCache(data) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), d: data })); } catch {}
+}
+
+// ===================== 娓叉煋 =====================
+let currentTab = 'shizheng';
+let allData = {};
+let loadingState = {};
+
+function updateProgress() {
+  const el = $('#progress');
+  if (!el) return;
+  const html = Object.keys(PANELS).map(k => {
+    const p = PANELS[k];
+    const state = loadingState[k];
+    if (!state || state.total === 0) return '';
+    const ok = state.sources.filter(s => s.status === 'ok').length;
+    const err = state.sources.filter(s => s.status === 'err').length;
+    if (ok + err >= state.total) {
+      return `<span class="progress-item done">${p.emoji} ${p.name} 鉁?/span>`;
+    }
+    return `<span class="progress-item">${p.emoji} ${p.name} ${ok+err}/${state.total}</span>`;
+  }).join('');
+  el.innerHTML = html;
+}
+
+function onFeedProgress(panelKey, source, status, done, total) {
+  if (!loadingState[panelKey]) loadingState[panelKey] = { sources: [], total };
+  loadingState[panelKey].sources.push({ source, status });
+  loadingState[panelKey].done = done;
+  loadingState[panelKey].total = total;
+  updateProgress();
+}
+
+function renderTabs() {
+  let html = '';
+  for (const [k, p] of Object.entries(PANELS)) {
+    const count = (allData[k] || []).length;
+    html += `<div class="tab ${p.cls} ${k === currentTab ? 'active' : ''}" data-tab="${k}" onclick="switchTab('${k}')">${p.emoji} ${p.name}${count ? ' 路 '+count : ''}</div>`;
+  }
+  $('#tabs').innerHTML = html;
+}
+
+function renderPanel(panelKey) {
+  const items = allData[panelKey] || [];
+  const panel = PANELS[panelKey];
+  const el = $('#content');
+
+  if (items.length === 0) {
+    if (panel.feeds.length === 0) {
+      el.innerHTML = `<div class="state"><div class="state-icon">馃摗</div><div>銆?{panel.name}銆嶆澘鍧楀嵆灏嗕笂绾?/div></div>`;
+    } else {
+      el.innerHTML = `<div class="state"><div class="state-icon">馃摥</div><div>鏆傛棤鏁版嵁<br><small>璇风◢鍚庡埛鏂?/small></div></div>`;
+    }
+    return;
+  }
+
+  const cards = items.map(item => {
+    const isEN = item._lang === 'en';
+    return `
+    <a class="card" href="${item.link}" target="_blank" rel="noopener">
+      <div class="card-source ${isEN ? 'en' : 'cn'}">${item.source}${isEN ? ' 路 鑻扁啋涓? : ''}</div>
+      <div class="card-title">${item.title}</div>
+      ${item.description ? `<div class="card-desc">${item.description}</div>` : ''}
+      <div class="card-meta">
+        <span>${fmtTime(new Date(item.pubDate))}</span>
+        ${isEN ? '<span class="trans-badge">鏈虹炕</span>' : ''}
+        <span style="margin-left:auto;font-size:10px;opacity:.6">鍘熸枃 鈫?/span>
+      </div>
+    </a>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="section-title">${panel.emoji} ${panel.name}<span class="section-count">${items.length}鏉?/span></div>
+    <div class="news-list">${cards}</div>
+  `;
+}
+
+function switchTab(key) {
+  currentTab = key;
+  renderTabs();
+  renderPanel(key);
+  document.body.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ===================== 涓绘祦绋?=====================
+async function refreshAll(silent) {
+  if (!silent) {
+    $('#content').innerHTML = '<div class="state"><div class="spin"></div><div>姝ｅ湪鑱氬悎浠婃棩璧勮鈥?/div></div>';
+  }
+  loadingState = {};
+  updateProgress();
+
+  const panelKeys = Object.keys(PANELS).filter(k => PANELS[k].feeds.length > 0);
+  const newData = {};
+
+  // Fetch all panels in parallel
+  const results = await Promise.allSettled(
+    panelKeys.map(k => fetchPanel(k, onFeedProgress))
+  );
+
+  for (let i = 0; i < panelKeys.length; i++) {
+    const k = panelKeys[i];
+    const r = results[i];
+    let items = r.status === 'fulfilled' ? r.value : [];
+
+    // Translate foreign items
+    try {
+      items = await translateItems(items);
+    } catch (e) {
+      console.warn(`缈昏瘧 ${k} 澶辫触:`, e);
+    }
+
+    // Deduplicate
+    const maxItems = PANELS[k].maxItems || 15;
+    items = deduplicate(items, maxItems);
+    newData[k] = items;
+  }
+
+  allData = newData;
+  setCache(allData);
+
+  // Also set empty data for panels with no feeds
+  for (const k of Object.keys(PANELS)) {
+    if (!allData[k]) allData[k] = [];
+  }
+
+  const now = new Date();
+  $('#updateTime').textContent = `路 ${fmtTime(now)}`;
+  renderTabs();
+  renderPanel(currentTab);
+  loadingState = {};
+  updateProgress();
+
+  if (!silent) toast('鉁?宸叉洿鏂?);
+}
+
+async function init() {
+  $('#dateStr').textContent = fmtDate(new Date());
+  $('#greeting').textContent = greet();
+
+  // Try cache first
+  const cache = getCache();
+  if (cache && cache.d && Object.keys(cache.d).some(k => (cache.d[k] || []).length > 0)) {
+    allData = cache.d;
+    const t = new Date(cache.t);
+    // Fill missing panel keys
+    for (const k of Object.keys(PANELS)) {
+      if (!allData[k]) allData[k] = [];
+    }
+    $('#updateTime').textContent = `路 ${fmtTime(t)}锛堢紦瀛橈級`;
+    renderTabs();
+    renderPanel(currentTab);
+    // Background refresh
+    refreshAll(true);
+  } else {
+    await refreshAll();
+  }
+}
+
+// ===================== 涓嬫媺鍒锋柊 =====================
+let ty0 = 0;
+document.addEventListener('DOMContentLoaded', () => {
+  const hint = $('#pullHint');
+  document.addEventListener('touchstart', e => { if (window.scrollY === 0) ty0 = e.touches[0].clientY; }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (ty0 === 0) return;
+    const dy = e.touches[0].clientY - ty0;
+    if (dy > 50 && window.scrollY === 0) { hint.style.opacity = '1'; hint.textContent = '鏉炬墜鍒锋柊'; }
+  }, { passive: true });
+  document.addEventListener('touchend', async () => {
+    if (hint.style.opacity === '1') { hint.style.opacity = '0'; hint.textContent = '鈫?涓嬫媺鍒锋柊'; await refreshAll(); }
+    ty0 = 0;
+  });
+});
+
+// 椤甸潰鍒囧洖鏃惰嚜鍔ㄥ埛缂撳瓨
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && !getCache()) refreshAll(true);
+});
+
+init();
+</script>
+</body>
+</html>
