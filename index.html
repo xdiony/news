@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>鏅ㄩ棿閫熻 路 姣忔棩璧勮</title>
+<title>晨间速览 · 每日资讯</title>
 <style>
 :root {
   --bg: #f7f3ed;
@@ -111,7 +111,7 @@ body{
 <div class="app">
   <div class="header">
     <div>
-      <div class="logo">鏅ㄩ棿<span>路</span>閫熻</div>
+      <div class="logo">晨间<span>·</span>速览</div>
       <div class="meta-line"><span class="dot"></span><span id="dateStr"></span><span id="updateTime"></span></div>
       <div class="greeting" id="greeting"></div>
     </div>
@@ -120,26 +120,26 @@ body{
   <div class="tabs" id="tabs"></div>
   <div class="progress" id="progress"></div>
   <div id="content">
-    <div class="state"><div class="spin"></div><div>姝ｅ湪鑱氬悎浠婃棩璧勮鈥?/div></div>
+    <div class="state"><div class="spin"></div><div>正在聚合今日资讯…</div></div>
   </div>
-  <div class="pull-hint" id="pullHint">鈫?涓嬫媺鍒锋柊</div>
-  <div class="footer">RSS鑱氬悎 路 閮ㄥ垎澶栫綉鍐呭鏈虹炕涓枃<br>Powered by rss2json</div>
+  <div class="pull-hint" id="pullHint">↓ 下拉刷新</div>
+  <div class="footer">RSS聚合 · 部分外网内容机翻中文<br>Powered by rss2json</div>
 </div>
 <div class="toast" id="toast"></div>
-<button class="refresh-fab" onclick="refreshAll()" title="鍒锋柊">鉄?/button>
+<button class="refresh-fab" onclick="refreshAll()" title="刷新">⟳</button>
 
 <script>
-// ===================== 鏉垮潡閰嶇疆 =====================
+// ===================== 板块配置 =====================
 const PANELS = {
   shizheng: {
-    name: '鏃舵斂', cls: 'sz', emoji: '馃彌',
+    name: '时政', cls: 'sz', emoji: '🏛',
     maxItems: 15,
     feeds: [
-      { url: 'http://www.xinhuanet.com/politics/news_politics.xml', source: '鏂板崕缃?, lang: 'zh' },
-      { url: 'https://rsshub.app/people/xjp', source: '浜烘皯缃?, lang: 'zh' },
-      { url: 'https://rsshub.app/cankaoxiaoxi', source: '鍙傝€冩秷鎭?, lang: 'zh' },
-      { url: 'https://rsshub.app/huanqiu', source: '鐜悆缃?, lang: 'zh' },
-      { url: 'https://rsshub.app/jiemian', source: '鐣岄潰鏂伴椈', lang: 'zh' },
+      { url: 'http://www.xinhuanet.com/politics/news_politics.xml', source: '新华网', lang: 'zh' },
+      { url: 'https://rsshub.app/people/xjp', source: '人民网', lang: 'zh' },
+      { url: 'https://rsshub.app/cankaoxiaoxi', source: '参考消息', lang: 'zh' },
+      { url: 'https://rsshub.app/huanqiu', source: '环球网', lang: 'zh' },
+      { url: 'https://rsshub.app/jiemian', source: '界面新闻', lang: 'zh' },
       { url: 'https://feeds.bbci.co.uk/news/rss.xml', source: 'BBC News', lang: 'en' },
       { url: 'https://rsshub.app/reuters/world', source: 'Reuters', lang: 'en' },
       { url: 'https://rsshub.app/apnews/top-news', source: 'AP News', lang: 'en' },
@@ -147,13 +147,13 @@ const PANELS = {
     ]
   },
   jingji: {
-    name: '缁忔祹', cls: 'jj', emoji: '馃挵',
+    name: '经济', cls: 'jj', emoji: '💰',
     maxItems: 15,
     feeds: [
-      { url: 'https://rsshub.app/cls/telegraph', source: '璐㈣仈绀?, lang: 'zh' },
-      { url: 'https://rsshub.app/yicai/brief', source: '绗竴璐㈢粡', lang: 'zh' },
-      { url: 'https://rsshub.app/eeo', source: '缁忔祹瑙傚療鎶?, lang: 'zh' },
-      { url: 'https://rsshub.app/jiemian', source: '鐣岄潰鏂伴椈', lang: 'zh' },
+      { url: 'https://rsshub.app/cls/telegraph', source: '财联社', lang: 'zh' },
+      { url: 'https://rsshub.app/yicai/brief', source: '第一财经', lang: 'zh' },
+      { url: 'https://rsshub.app/eeo', source: '经济观察报', lang: 'zh' },
+      { url: 'https://rsshub.app/jiemian', source: '界面新闻', lang: 'zh' },
       { url: 'https://rsshub.app/bloomberg', source: 'Bloomberg', lang: 'en' },
       { url: 'https://rsshub.app/ft/chinese', source: 'FT', lang: 'en' },
       { url: 'https://rsshub.app/cnbc', source: 'CNBC', lang: 'en' },
@@ -161,23 +161,23 @@ const PANELS = {
     ]
   },
   keji: {
-    name: '绉戞妧', cls: 'kj', emoji: '馃',
+    name: '科技', cls: 'kj', emoji: '🤖',
     maxItems: 15,
     feeds: [
-      { url: 'https://rsshub.app/jiqizhixin/home', source: '鏈哄櫒涔嬪績', lang: 'zh' },
-      { url: 'https://rsshub.app/36kr', source: '36姘?, lang: 'zh' },
+      { url: 'https://rsshub.app/jiqizhixin/home', source: '机器之心', lang: 'zh' },
+      { url: 'https://rsshub.app/36kr', source: '36氪', lang: 'zh' },
       { url: 'https://rsshub.app/infoq', source: 'InfoQ', lang: 'zh' },
-      { url: 'https://rsshub.app/jiemian', source: '鐣岄潰鏂伴椈', lang: 'zh' },
+      { url: 'https://rsshub.app/jiemian', source: '界面新闻', lang: 'zh' },
       { url: 'https://rsshub.app/techcrunch', source: 'TechCrunch', lang: 'en' },
       { url: 'https://rsshub.app/theverge', source: 'The Verge', lang: 'en' },
       { url: 'https://rsshub.app/wired', source: 'Wired', lang: 'en' },
       { url: 'https://rsshub.app/arstechnica', source: 'Ars Technica', lang: 'en' },
       { url: 'https://rsshub.app/mit-technology-review', source: 'MIT Tech Review', lang: 'en' },
-      { url: 'https://rsshub.app/liangzixing', source: '閲忓瓙浣?, lang: 'zh' },
+      { url: 'https://rsshub.app/liangzixing', source: '量子位', lang: 'zh' },
     ]
   },
   dongxiang: {
-    name: '鍔ㄥ悜', cls: 'dt', emoji: '馃摗',
+    name: '动向', cls: 'dt', emoji: '📡',
     maxItems: 0,
     feeds: []
   }
@@ -186,24 +186,24 @@ const PANELS = {
 const CACHE_KEY = 'md_cache_v2';
 const CACHE_TTL = 25 * 60 * 1000;
 
-// ===================== 宸ュ叿 =====================
+// ===================== 工具 =====================
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 
 function fmtDate(d) {
-  const w = ['鏃?,'涓€','浜?,'涓?,'鍥?,'浜?,'鍏?];
-  return `${d.getFullYear()}骞?{d.getMonth()+1}鏈?{d.getDate()}鏃?鏄熸湡${w[d.getDay()]}`;
+  const w = ['日','一','二','三','四','五','六'];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 星期${w[d.getDay()]}`;
 }
 function fmtTime(d) { return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
 
 function greet() {
   const h = new Date().getHours();
-  if (h < 6) return '澶滄繁浜?馃寵';
-  if (h < 9) return '鏃╀笂濂?鈽€锔?;
-  if (h < 12) return '涓婂崍濂?馃尋';
-  if (h < 14) return '涓崍濂?鈽€锔?;
-  if (h < 18) return '涓嬪崍濂?馃寛';
-  return '鏅氫笂濂?馃寙';
+  if (h < 6) return '夜深了 🌙';
+  if (h < 9) return '早上好 ☀️';
+  if (h < 12) return '上午好 🌤';
+  if (h < 14) return '中午好 ☀️';
+  if (h < 18) return '下午好 🌈';
+  return '晚上好 🌆';
 }
 
 function toast(msg) {
@@ -218,7 +218,7 @@ function strip(str) {
 
 function wordSet(text) {
   if (!text) return new Set();
-  // 绠€鍗曞垎瀛楋紙涓枃鎸夊瓧锛岃嫳鏂囨寜璇嶏級
+  // 简单分字（中文按字，英文按词）
   const cleaned = text.toLowerCase().replace(/[^\u4e00-\u9fa5a-z0-9]/g,' ');
   return new Set(cleaned.split(/\s+/).filter(w => w.length > 0));
 }
@@ -230,7 +230,7 @@ function overlapPct(a, b) {
   return intersect / Math.max(wa.size, wb.size);
 }
 
-// ===================== 缈昏瘧 =====================
+// ===================== 翻译 =====================
 const translateCache = {};
 async function translateText(text) {
   if (!text || text.length < 2) return text;
@@ -286,7 +286,7 @@ async function translateItems(items) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// ===================== 鏁版嵁鑾峰彇 =====================
+// ===================== 数据获取 =====================
 async function fetchOneFeed(feedConfig) {
   const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedConfig.url)}&order_by=pubDate&order_dir=desc`;
   const resp = await fetch(url, { signal: AbortSignal.timeout(12000) });
@@ -319,7 +319,7 @@ async function fetchPanel(panelKey, onProgress) {
       } catch (e) {
         done++;
         if (onProgress) onProgress(panelKey, feed.source, 'err', done, total);
-        console.warn(`${feed.source} 鑾峰彇澶辫触: ${e.message}`);
+        console.warn(`${feed.source} 获取失败: ${e.message}`);
         return [];
       }
     })
@@ -356,7 +356,7 @@ function deduplicate(items, maxItems) {
   return deduped;
 }
 
-// ===================== 缂撳瓨 =====================
+// ===================== 缓存 =====================
 function getCache() {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
@@ -370,7 +370,7 @@ function setCache(data) {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), d: data })); } catch {}
 }
 
-// ===================== 娓叉煋 =====================
+// ===================== 渲染 =====================
 let currentTab = 'shizheng';
 let allData = {};
 let loadingState = {};
@@ -385,7 +385,7 @@ function updateProgress() {
     const ok = state.sources.filter(s => s.status === 'ok').length;
     const err = state.sources.filter(s => s.status === 'err').length;
     if (ok + err >= state.total) {
-      return `<span class="progress-item done">${p.emoji} ${p.name} 鉁?/span>`;
+      return `<span class="progress-item done">${p.emoji} ${p.name} ✓</span>`;
     }
     return `<span class="progress-item">${p.emoji} ${p.name} ${ok+err}/${state.total}</span>`;
   }).join('');
@@ -404,7 +404,7 @@ function renderTabs() {
   let html = '';
   for (const [k, p] of Object.entries(PANELS)) {
     const count = (allData[k] || []).length;
-    html += `<div class="tab ${p.cls} ${k === currentTab ? 'active' : ''}" data-tab="${k}" onclick="switchTab('${k}')">${p.emoji} ${p.name}${count ? ' 路 '+count : ''}</div>`;
+    html += `<div class="tab ${p.cls} ${k === currentTab ? 'active' : ''}" data-tab="${k}" onclick="switchTab('${k}')">${p.emoji} ${p.name}${count ? ' · '+count : ''}</div>`;
   }
   $('#tabs').innerHTML = html;
 }
@@ -416,9 +416,9 @@ function renderPanel(panelKey) {
 
   if (items.length === 0) {
     if (panel.feeds.length === 0) {
-      el.innerHTML = `<div class="state"><div class="state-icon">馃摗</div><div>銆?{panel.name}銆嶆澘鍧楀嵆灏嗕笂绾?/div></div>`;
+      el.innerHTML = `<div class="state"><div class="state-icon">📡</div><div>「${panel.name}」板块即将上线</div></div>`;
     } else {
-      el.innerHTML = `<div class="state"><div class="state-icon">馃摥</div><div>鏆傛棤鏁版嵁<br><small>璇风◢鍚庡埛鏂?/small></div></div>`;
+      el.innerHTML = `<div class="state"><div class="state-icon">📭</div><div>暂无数据<br><small>请稍后刷新</small></div></div>`;
     }
     return;
   }
@@ -427,19 +427,19 @@ function renderPanel(panelKey) {
     const isEN = item._lang === 'en';
     return `
     <a class="card" href="${item.link}" target="_blank" rel="noopener">
-      <div class="card-source ${isEN ? 'en' : 'cn'}">${item.source}${isEN ? ' 路 鑻扁啋涓? : ''}</div>
+      <div class="card-source ${isEN ? 'en' : 'cn'}">${item.source}${isEN ? ' · 英→中' : ''}</div>
       <div class="card-title">${item.title}</div>
       ${item.description ? `<div class="card-desc">${item.description}</div>` : ''}
       <div class="card-meta">
         <span>${fmtTime(new Date(item.pubDate))}</span>
-        ${isEN ? '<span class="trans-badge">鏈虹炕</span>' : ''}
-        <span style="margin-left:auto;font-size:10px;opacity:.6">鍘熸枃 鈫?/span>
+        ${isEN ? '<span class="trans-badge">机翻</span>' : ''}
+        <span style="margin-left:auto;font-size:10px;opacity:.6">原文 →</span>
       </div>
     </a>`;
   }).join('');
 
   el.innerHTML = `
-    <div class="section-title">${panel.emoji} ${panel.name}<span class="section-count">${items.length}鏉?/span></div>
+    <div class="section-title">${panel.emoji} ${panel.name}<span class="section-count">${items.length}条</span></div>
     <div class="news-list">${cards}</div>
   `;
 }
@@ -451,10 +451,10 @@ function switchTab(key) {
   document.body.scrollIntoView({ behavior: 'smooth' });
 }
 
-// ===================== 涓绘祦绋?=====================
+// ===================== 主流程 =====================
 async function refreshAll(silent) {
   if (!silent) {
-    $('#content').innerHTML = '<div class="state"><div class="spin"></div><div>姝ｅ湪鑱氬悎浠婃棩璧勮鈥?/div></div>';
+    $('#content').innerHTML = '<div class="state"><div class="spin"></div><div>正在聚合今日资讯…</div></div>';
   }
   loadingState = {};
   updateProgress();
@@ -476,7 +476,7 @@ async function refreshAll(silent) {
     try {
       items = await translateItems(items);
     } catch (e) {
-      console.warn(`缈昏瘧 ${k} 澶辫触:`, e);
+      console.warn(`翻译 ${k} 失败:`, e);
     }
 
     // Deduplicate
@@ -494,13 +494,13 @@ async function refreshAll(silent) {
   }
 
   const now = new Date();
-  $('#updateTime').textContent = `路 ${fmtTime(now)}`;
+  $('#updateTime').textContent = `· ${fmtTime(now)}`;
   renderTabs();
   renderPanel(currentTab);
   loadingState = {};
   updateProgress();
 
-  if (!silent) toast('鉁?宸叉洿鏂?);
+  if (!silent) toast('✅ 已更新');
 }
 
 async function init() {
@@ -516,7 +516,7 @@ async function init() {
     for (const k of Object.keys(PANELS)) {
       if (!allData[k]) allData[k] = [];
     }
-    $('#updateTime').textContent = `路 ${fmtTime(t)}锛堢紦瀛橈級`;
+    $('#updateTime').textContent = `· ${fmtTime(t)}（缓存）`;
     renderTabs();
     renderPanel(currentTab);
     // Background refresh
@@ -526,7 +526,7 @@ async function init() {
   }
 }
 
-// ===================== 涓嬫媺鍒锋柊 =====================
+// ===================== 下拉刷新 =====================
 let ty0 = 0;
 document.addEventListener('DOMContentLoaded', () => {
   const hint = $('#pullHint');
@@ -534,15 +534,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('touchmove', e => {
     if (ty0 === 0) return;
     const dy = e.touches[0].clientY - ty0;
-    if (dy > 50 && window.scrollY === 0) { hint.style.opacity = '1'; hint.textContent = '鏉炬墜鍒锋柊'; }
+    if (dy > 50 && window.scrollY === 0) { hint.style.opacity = '1'; hint.textContent = '松手刷新'; }
   }, { passive: true });
   document.addEventListener('touchend', async () => {
-    if (hint.style.opacity === '1') { hint.style.opacity = '0'; hint.textContent = '鈫?涓嬫媺鍒锋柊'; await refreshAll(); }
+    if (hint.style.opacity === '1') { hint.style.opacity = '0'; hint.textContent = '↓ 下拉刷新'; await refreshAll(); }
     ty0 = 0;
   });
 });
 
-// 椤甸潰鍒囧洖鏃惰嚜鍔ㄥ埛缂撳瓨
+// 页面切回时自动刷缓存
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && !getCache()) refreshAll(true);
 });
