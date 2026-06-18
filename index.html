@@ -123,78 +123,32 @@ body{
     <div class="state"><div class="spin"></div><div>正在聚合今日资讯…</div></div>
   </div>
   <div class="pull-hint" id="pullHint">↓ 下拉刷新</div>
-  <div class="footer">RSS聚合 · 部分外网内容机翻中文<br>Powered by rss2json</div>
+  <div class="footer">预抓取数据 · 外网内容机翻中文<br>每日自动更新</div>
 </div>
 <div class="toast" id="toast"></div>
-<button class="refresh-fab" onclick="refreshAll()" title="刷新">⟳</button>
+<button class="refresh-fab" onclick="refreshData()" title="刷新">⟳</button>
 
 <script>
 // ===================== 板块配置 =====================
-const PANELS = {
-  shizheng: {
-    name: '时政', cls: 'sz', emoji: '🏛',
-    maxItems: 15,
-    feeds: [
-      { url: 'http://www.xinhuanet.com/politics/news_politics.xml', source: '新华网', lang: 'zh' },
-      { url: 'https://rsshub.app/people/xjp', source: '人民网', lang: 'zh' },
-      { url: 'https://rsshub.app/cankaoxiaoxi', source: '参考消息', lang: 'zh' },
-      { url: 'https://rsshub.app/huanqiu', source: '环球网', lang: 'zh' },
-      { url: 'https://rsshub.app/jiemian', source: '界面新闻', lang: 'zh' },
-      { url: 'https://feeds.bbci.co.uk/news/rss.xml', source: 'BBC News', lang: 'en' },
-      { url: 'https://rsshub.app/reuters/world', source: 'Reuters', lang: 'en' },
-      { url: 'https://rsshub.app/apnews/top-news', source: 'AP News', lang: 'en' },
-      { url: 'https://www.aljazeera.com/xml/rss/all.xml', source: 'Al Jazeera', lang: 'en' },
-    ]
-  },
-  jingji: {
-    name: '经济', cls: 'jj', emoji: '💰',
-    maxItems: 15,
-    feeds: [
-      { url: 'https://rsshub.app/cls/telegraph', source: '财联社', lang: 'zh' },
-      { url: 'https://rsshub.app/yicai/brief', source: '第一财经', lang: 'zh' },
-      { url: 'https://rsshub.app/eeo', source: '经济观察报', lang: 'zh' },
-      { url: 'https://rsshub.app/jiemian', source: '界面新闻', lang: 'zh' },
-      { url: 'https://rsshub.app/bloomberg', source: 'Bloomberg', lang: 'en' },
-      { url: 'https://rsshub.app/ft/chinese', source: 'FT', lang: 'en' },
-      { url: 'https://rsshub.app/cnbc', source: 'CNBC', lang: 'en' },
-      { url: 'https://rsshub.app/the-economist', source: 'The Economist', lang: 'en' },
-    ]
-  },
-  keji: {
-    name: '科技', cls: 'kj', emoji: '🤖',
-    maxItems: 15,
-    feeds: [
-      { url: 'https://rsshub.app/jiqizhixin/home', source: '机器之心', lang: 'zh' },
-      { url: 'https://rsshub.app/36kr', source: '36氪', lang: 'zh' },
-      { url: 'https://rsshub.app/infoq', source: 'InfoQ', lang: 'zh' },
-      { url: 'https://rsshub.app/jiemian', source: '界面新闻', lang: 'zh' },
-      { url: 'https://rsshub.app/techcrunch', source: 'TechCrunch', lang: 'en' },
-      { url: 'https://rsshub.app/theverge', source: 'The Verge', lang: 'en' },
-      { url: 'https://rsshub.app/wired', source: 'Wired', lang: 'en' },
-      { url: 'https://rsshub.app/arstechnica', source: 'Ars Technica', lang: 'en' },
-      { url: 'https://rsshub.app/mit-technology-review', source: 'MIT Tech Review', lang: 'en' },
-      { url: 'https://rsshub.app/liangzixing', source: '量子位', lang: 'zh' },
-    ]
-  },
-  dongxiang: {
-    name: '动向', cls: 'dt', emoji: '📡',
-    maxItems: 0,
-    feeds: []
-  }
+const PANEL_INFO = {
+  shizheng: { name: '时政', cls: 'sz', emoji: '🏛' },
+  jingji:   { name: '经济', cls: 'jj', emoji: '💰' },
+  keji:     { name: '科技', cls: 'kj', emoji: '🤖' },
+  dongxiang:{ name: '动向', cls: 'dt', emoji: '📡' }
 };
 
-const CACHE_KEY = 'md_cache_v2';
-const CACHE_TTL = 25 * 60 * 1000;
+const DATA_URL = 'news_data.json';
+const CACHE_KEY = 'md_cache_v3';
+const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
 
 // ===================== 工具 =====================
 const $ = s => document.querySelector(s);
-const $$ = s => document.querySelectorAll(s);
 
 function fmtDate(d) {
   const w = ['日','一','二','三','四','五','六'];
-  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 星期${w[d.getDay()]}`;
+  return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 星期'+w[d.getDay()];
 }
-function fmtTime(d) { return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+function fmtTime(d) { return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
 
 function greet() {
   const h = new Date().getHours();
@@ -211,151 +165,6 @@ function toast(msg) {
   setTimeout(() => el.classList.remove('show'), 2200);
 }
 
-function strip(str) {
-  if (!str) return '';
-  return str.replace(/<[^>]*>/g,'').replace(/&[a-z]+;/g,' ').replace(/\s+/g,' ').trim();
-}
-
-function wordSet(text) {
-  if (!text) return new Set();
-  // 简单分字（中文按字，英文按词）
-  const cleaned = text.toLowerCase().replace(/[^\u4e00-\u9fa5a-z0-9]/g,' ');
-  return new Set(cleaned.split(/\s+/).filter(w => w.length > 0));
-}
-
-function overlapPct(a, b) {
-  const wa = wordSet(a), wb = wordSet(b);
-  if (wa.size === 0 && wb.size === 0) return 0;
-  const intersect = [...wa].filter(w => wb.has(w)).length;
-  return intersect / Math.max(wa.size, wb.size);
-}
-
-// ===================== 翻译 =====================
-const translateCache = {};
-async function translateText(text) {
-  if (!text || text.length < 2) return text;
-  const key = text.substring(0, 80);
-  if (translateCache[key]) return translateCache[key];
-
-  try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${encodeURIComponent(text.substring(0,500))}`;
-    const resp = await fetch(url);
-    const data = await resp.json();
-    const result = (data[0] || []).map(x => x[0]).join('').trim();
-    translateCache[key] = result || text;
-    return translateCache[key];
-  } catch {
-    return text;
-  }
-}
-
-async function translateItems(items) {
-  const toTranslate = [];
-  const indices = [];
-  items.forEach((item, i) => {
-    if (item._lang === 'en') {
-      // Translate title
-      toTranslate.push(item.title.substring(0,200));
-      indices.push({ i, field: 'title' });
-      // Translate description
-      if (item.description && item.description.length > 5) {
-        toTranslate.push(item.description.substring(0,300));
-        indices.push({ i, field: 'description' });
-      }
-    }
-  });
-
-  if (toTranslate.length === 0) return items;
-
-  // Batch translate with small delay between batches
-  const BATCH = 5;
-  const results = [];
-  for (let b = 0; b < toTranslate.length; b += BATCH) {
-    const batch = toTranslate.slice(b, b + BATCH);
-    const batchResults = await Promise.all(batch.map(t => translateText(t)));
-    results.push(...batchResults);
-    if (b + BATCH < toTranslate.length) await sleep(200);
-  }
-
-  indices.forEach(({ i, field }, idx) => {
-    items[i][field] = results[idx] || items[i][field];
-  });
-
-  return items;
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// ===================== 数据获取 =====================
-async function fetchOneFeed(feedConfig) {
-  const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedConfig.url)}&order_by=pubDate&order_dir=desc`;
-  const resp = await fetch(url, { signal: AbortSignal.timeout(12000) });
-  const data = await resp.json();
-  if (data.status !== 'ok') throw new Error(data.message || 'parse error');
-  return (data.items || []).map(item => ({
-    title: strip(item.title),
-    description: strip(item.description || '').substring(0, 150),
-    link: item.link,
-    pubDate: item.pubDate,
-    source: feedConfig.source,
-    _lang: feedConfig.lang
-  }));
-}
-
-async function fetchPanel(panelKey, onProgress) {
-  const panel = PANELS[panelKey];
-  if (!panel || panel.feeds.length === 0) return [];
-
-  let allItems = [];
-  let done = 0, total = panel.feeds.length;
-
-  const results = await Promise.allSettled(
-    panel.feeds.map(async (feed, idx) => {
-      try {
-        const items = await fetchOneFeed(feed);
-        done++;
-        if (onProgress) onProgress(panelKey, feed.source, 'ok', done, total);
-        return items;
-      } catch (e) {
-        done++;
-        if (onProgress) onProgress(panelKey, feed.source, 'err', done, total);
-        console.warn(`${feed.source} 获取失败: ${e.message}`);
-        return [];
-      }
-    })
-  );
-
-  for (const r of results) {
-    if (r.status === 'fulfilled') allItems = allItems.concat(r.value);
-  }
-
-  return allItems;
-}
-
-function deduplicate(items, maxItems) {
-  // Sort by date (newest first)
-  items.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-
-  const deduped = [];
-  const seen = new Set();
-
-  for (const item of items) {
-    // Skip items with no meaningful title
-    if (!item.title || item.title.length < 4) continue;
-    // Skip duplicates by URL
-    if (seen.has(item.link)) continue;
-    // Check title overlap with existing items
-    const isDup = deduped.some(existing => overlapPct(item.title, existing.title) > 0.55);
-    if (isDup) continue;
-
-    seen.add(item.link);
-    deduped.push(item);
-    if (deduped.length >= maxItems) break;
-  }
-
-  return deduped;
-}
-
 // ===================== 缓存 =====================
 function getCache() {
   try {
@@ -370,137 +179,92 @@ function setCache(data) {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), d: data })); } catch {}
 }
 
+// ===================== 数据加载 =====================
+async function loadData() {
+  try {
+    const resp = await fetch(DATA_URL + '?t=' + Date.now());
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const json = await resp.json();
+    return json;
+  } catch (e) {
+    console.warn('加载JSON失败:', e.message);
+    return null;
+  }
+}
+
 // ===================== 渲染 =====================
 let currentTab = 'shizheng';
 let allData = {};
-let loadingState = {};
-
-function updateProgress() {
-  const el = $('#progress');
-  if (!el) return;
-  const html = Object.keys(PANELS).map(k => {
-    const p = PANELS[k];
-    const state = loadingState[k];
-    if (!state || state.total === 0) return '';
-    const ok = state.sources.filter(s => s.status === 'ok').length;
-    const err = state.sources.filter(s => s.status === 'err').length;
-    if (ok + err >= state.total) {
-      return `<span class="progress-item done">${p.emoji} ${p.name} ✓</span>`;
-    }
-    return `<span class="progress-item">${p.emoji} ${p.name} ${ok+err}/${state.total}</span>`;
-  }).join('');
-  el.innerHTML = html;
-}
-
-function onFeedProgress(panelKey, source, status, done, total) {
-  if (!loadingState[panelKey]) loadingState[panelKey] = { sources: [], total };
-  loadingState[panelKey].sources.push({ source, status });
-  loadingState[panelKey].done = done;
-  loadingState[panelKey].total = total;
-  updateProgress();
-}
+let metaInfo = {};
 
 function renderTabs() {
   let html = '';
-  for (const [k, p] of Object.entries(PANELS)) {
+  for (const [k, p] of Object.entries(PANEL_INFO)) {
     const count = (allData[k] || []).length;
-    html += `<div class="tab ${p.cls} ${k === currentTab ? 'active' : ''}" data-tab="${k}" onclick="switchTab('${k}')">${p.emoji} ${p.name}${count ? ' · '+count : ''}</div>`;
+    const show = (k === 'dongxiang') ? '' : (count ? ' · '+count : '');
+    html += '<div class="tab '+p.cls+' '+(k===currentTab?'active':'')+'" onclick="switchTab(\''+k+'\')">'+p.emoji+' '+p.name+show+'</div>';
   }
   $('#tabs').innerHTML = html;
 }
 
 function renderPanel(panelKey) {
   const items = allData[panelKey] || [];
-  const panel = PANELS[panelKey];
+  const panel = PANEL_INFO[panelKey];
   const el = $('#content');
 
   if (items.length === 0) {
-    if (panel.feeds.length === 0) {
-      el.innerHTML = `<div class="state"><div class="state-icon">📡</div><div>「${panel.name}」板块即将上线</div></div>`;
+    if (panelKey === 'dongxiang') {
+      el.innerHTML = '<div class="state"><div class="state-icon">📡</div><div>「动向」板块即将上线</div></div>';
     } else {
-      el.innerHTML = `<div class="state"><div class="state-icon">📭</div><div>暂无数据<br><small>请稍后刷新</small></div></div>`;
+      el.innerHTML = '<div class="state"><div class="state-icon">📭</div><div>暂无数据<br><small>请检查网络后刷新</small></div></div>';
     }
     return;
   }
 
   const cards = items.map(item => {
+    // Use translated title for display, or fallback to original title (unlikely since data.json has pre-translated)
     const isEN = item._lang === 'en';
-    return `
-    <a class="card" href="${item.link}" target="_blank" rel="noopener">
-      <div class="card-source ${isEN ? 'en' : 'cn'}">${item.source}${isEN ? ' · 英→中' : ''}</div>
-      <div class="card-title">${item.title}</div>
-      ${item.description ? `<div class="card-desc">${item.description}</div>` : ''}
-      <div class="card-meta">
-        <span>${fmtTime(new Date(item.pubDate))}</span>
-        ${isEN ? '<span class="trans-badge">机翻</span>' : ''}
-        <span style="margin-left:auto;font-size:10px;opacity:.6">原文 →</span>
-      </div>
-    </a>`;
+    return '\n    <a class="card" href="'+item.link+'" target="_blank" rel="noopener">\n      <div class="card-source '+(isEN?'en':'cn')+'">'+item.source+(isEN?' · 英→中':'')+'</div>\n      <div class="card-title">'+item.title+'</div>\n      '+(item.description?'<div class="card-desc">'+item.description+'</div>':'')+'\n      <div class="card-meta">\n        <span>'+fmtTime(new Date(item.pubDate))+'</span>\n        '+(isEN?'<span class="trans-badge">机翻</span>':'')+'\n        <span style="margin-left:auto;font-size:10px;opacity:.6">原文 →</span>\n      </div>\n    </a>';
   }).join('');
 
-  el.innerHTML = `
-    <div class="section-title">${panel.emoji} ${panel.name}<span class="section-count">${items.length}条</span></div>
-    <div class="news-list">${cards}</div>
-  `;
+  el.innerHTML = '\n    <div class="section-title">'+panel.emoji+' '+panel.name+'<span class="section-count">'+items.length+'条</span></div>\n    <div class="news-list">'+cards+'</div>\n  ';
 }
 
 function switchTab(key) {
   currentTab = key;
   renderTabs();
   renderPanel(key);
-  document.body.scrollIntoView({ behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ===================== 主流程 =====================
-async function refreshAll(silent) {
+async function refreshData(silent) {
   if (!silent) {
-    $('#content').innerHTML = '<div class="state"><div class="spin"></div><div>正在聚合今日资讯…</div></div>';
+    $('#content').innerHTML = '<div class="state"><div class="spin"></div><div>正在加载数据…</div></div>';
   }
-  loadingState = {};
-  updateProgress();
 
-  const panelKeys = Object.keys(PANELS).filter(k => PANELS[k].feeds.length > 0);
-  const newData = {};
-
-  // Fetch all panels in parallel
-  const results = await Promise.allSettled(
-    panelKeys.map(k => fetchPanel(k, onFeedProgress))
-  );
-
-  for (let i = 0; i < panelKeys.length; i++) {
-    const k = panelKeys[i];
-    const r = results[i];
-    let items = r.status === 'fulfilled' ? r.value : [];
-
-    // Translate foreign items
-    try {
-      items = await translateItems(items);
-    } catch (e) {
-      console.warn(`翻译 ${k} 失败:`, e);
+  const json = await loadData();
+  
+  if (json && json.data) {
+    allData = json.data;
+    metaInfo = json.panels || PANEL_INFO;
+    
+    // Fill empty panels
+    for (const k of Object.keys(PANEL_INFO)) {
+      if (!allData[k]) allData[k] = [];
     }
-
-    // Deduplicate
-    const maxItems = PANELS[k].maxItems || 15;
-    items = deduplicate(items, maxItems);
-    newData[k] = items;
+    
+    setCache(allData);
+    
+    const t = json.generated_at ? new Date(json.generated_at) : new Date();
+    $('#updateTime').textContent = '· '+fmtTime(t);
+    if (!silent) toast('✅ 已更新');
+  } else if (!silent) {
+    toast('⚠️ 加载失败，使用缓存');
   }
 
-  allData = newData;
-  setCache(allData);
-
-  // Also set empty data for panels with no feeds
-  for (const k of Object.keys(PANELS)) {
-    if (!allData[k]) allData[k] = [];
-  }
-
-  const now = new Date();
-  $('#updateTime').textContent = `· ${fmtTime(now)}`;
   renderTabs();
   renderPanel(currentTab);
-  loadingState = {};
-  updateProgress();
-
-  if (!silent) toast('✅ 已更新');
 }
 
 async function init() {
@@ -509,20 +273,19 @@ async function init() {
 
   // Try cache first
   const cache = getCache();
-  if (cache && cache.d && Object.keys(cache.d).some(k => (cache.d[k] || []).length > 0)) {
+  if (cache && cache.d) {
     allData = cache.d;
-    const t = new Date(cache.t);
-    // Fill missing panel keys
-    for (const k of Object.keys(PANELS)) {
+    for (const k of Object.keys(PANEL_INFO)) {
       if (!allData[k]) allData[k] = [];
     }
-    $('#updateTime').textContent = `· ${fmtTime(t)}（缓存）`;
+    const t = new Date(cache.t);
+    $('#updateTime').textContent = '· '+fmtTime(t)+'（缓存）';
     renderTabs();
     renderPanel(currentTab);
     // Background refresh
-    refreshAll(true);
+    refreshData(true);
   } else {
-    await refreshAll();
+    await refreshData();
   }
 }
 
@@ -537,14 +300,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dy > 50 && window.scrollY === 0) { hint.style.opacity = '1'; hint.textContent = '松手刷新'; }
   }, { passive: true });
   document.addEventListener('touchend', async () => {
-    if (hint.style.opacity === '1') { hint.style.opacity = '0'; hint.textContent = '↓ 下拉刷新'; await refreshAll(); }
+    if (hint.style.opacity === '1') { hint.style.opacity = '0'; hint.textContent = '↓ 下拉刷新'; await refreshData(); }
     ty0 = 0;
   });
 });
 
-// 页面切回时自动刷缓存
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && !getCache()) refreshAll(true);
+  if (document.visibilityState === 'visible' && !getCache()) refreshData(true);
 });
 
 init();
