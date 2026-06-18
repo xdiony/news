@@ -1,0 +1,38 @@
+name: Fetch Daily News
+
+on:
+  schedule:
+    # 每天北京时间 7:00 和 19:00 各跑一次
+    - cron: '0 23 * * *'
+    - cron: '0 11 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch News
+        run: python fetch_news.py
+
+      - name: Commit and Push
+        run: |
+          git config user.name "News Bot"
+          git config user.email "bot@news.local"
+          git add news_data.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Auto: update news data $(date +%Y-%m-%d)"
+            git push
+          fi
